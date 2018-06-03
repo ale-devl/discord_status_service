@@ -1,8 +1,17 @@
-const express = require("express");
-const User = require("./user/user");
-const app = express()
+"use strict";
+module.exports = function (app) {
+    const ApplicationKeyHandler = require("../util/ApplicationKeyHandler"),
+        cors = require("cors"),
+        Client = require("./client/Client");
 
-app.get('/user', User.getUser);
-app.post('/user', User.postUser);
+    app.use(cors({origin: "*"}));
 
-app.listen(3000, console.log("Listening on Port 3000.."));
+    app.route('/client')
+        .post([ApplicationKeyHandler.checkKey, Client.postClient]);
+
+    app.route('/client/:token')
+        .get([ApplicationKeyHandler.checkKey, Client.getClient]);
+
+    app.route('/activeTokens')
+        .get([ApplicationKeyHandler.checkKey, Client.isClientActive]);
+}
