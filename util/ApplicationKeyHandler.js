@@ -4,10 +4,11 @@ const sCurrentKey = getCurrentKey(),
 
 class ApplicationKeyHandler {
     static checkKey(req, res, next) {
-        if (req.headers.appkey === sCurrentKey || bDebug)  {
+        if (req.query.appkey === sCurrentKey || bDebug)  {
             next();
         } else {
             console.log("Invalid AppKey used");
+            res.status(400).send();
         }
     }
 }

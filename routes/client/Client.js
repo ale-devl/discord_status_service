@@ -1,14 +1,10 @@
 "use strict";
 const ClientHandler = require("../../util/ClientHandler"),
-    crypto = require("crypto");
+    DiscordClient = require("../../util/DiscordClient");
 
 class Client {
     static getClient (req, res) {
-        console.log("Client requested!");
-        if (!req || !res) {
-            console.error("ERROR: No req/res for getClient request!");
-            return;
-        } else {
+        console.log("getClient");
             let oClient = ClientHandler.getClient(req.params.token);
             if (oClient) {
                 let iRemainingTimeInSeconds = (oClient.duration - (Date.now() - oClient.startTime)) / 1000,
@@ -18,44 +14,65 @@ class Client {
                     };
                 res.status(200).json(oFilteredClient);
             } else {
-                setTimeout(() => {res.status(204).send()}, 5000);
+                res.status(204).send();
             }
-        }
     }
 
     static postClient (req, res) {
-        if (!req || !res) {
-            console.error("ERROR: No req/res for postClient request!");
-            return;
-        } else {
-            let sToken      = req.headers.token,
-                iDuration   = req.headers.duration,
-                sGameName   = req.headers.gameName,
-                sStatus     = req.headers.status;
-
-            ClientHandler.setupClient(sToken, iDuration, sGameName, sStatus)
-                .then(() => {
-                    res.status(201).send();
-                })
-                .catch(err => {
-                    console.error(err);
-                    res.status(400).send();
-                });
-        }
+        console.log("postClient");
+        let oClientConfiguration = {
+            token: req.params.token,
+            duration: req.params.duration,
+            gameName: req.params.gameName,
+            status: req.params.status
+        };
+        ClientHandler.setupClient(oClientConfiguration)
+            .then(() => {
+                let oFilteredClient = {
+                    gameName: oClientConfiguration.gameName,
+                    remainingTimeInSeconds: duration
+                };
+                res.status(201).json(oFilteredClient);
+            })
+            .catch(err => {
+                console.error("Error setting up client. Note: This can be due to all kinds of reasons and a proper error handling needs to be implemented!");
+                res.status(400).send();
+            });
     }
 
-    static isClientActive (req, res) {
-        if (!req || !res) {
-            console.error("ERROR: No req/res for getTokenList request!");
-            return;
-        } else {
-            let aTokenList = ClientHandler.getTokenList();
+    static getIsTokenValid (req, res) {
+        console.log("Token validation check..");
+        DiscordClient.testToken(req.params.token)
+            .then(() => res.status(200).send())
+            .catch(() => res.status(400).send());
+    }
 
-            if(req.params.token) {
-                
-            }
-            res.status(200).json(aEncryptedTokenList);
-        }
+    static putClient (req, res) {
+        console.log("putClient");
+        let oClientConfiguration = {
+            token: req.params.token,
+            duration: req.params.duration,
+            gameName: req.params.gameName,
+            status: req.params.status
+        };
+
+        ClientHandler.updateClient(oClientConfiguration)
+            .then(res.status(204).send())
+            .catch(err =>
+                {
+                    switch(err.error) {
+                        case 404:
+                            res.status(404).send();
+                            break;
+                    }
+                });
+    }
+
+    static deleteClient (req, res) {
+        console.log("deleteClient");
+        ClientHandler.deleteClient(req.params.token)
+            .then(res.status(200).send())
+            .catch(res.status(404).send());
     }
 }
 

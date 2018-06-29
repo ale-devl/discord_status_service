@@ -11,6 +11,16 @@ class DiscordClient {
         this.client.destroy();
         delete this;
     }
+
+    setPresence(oPresence) {
+        this.client.user.setPresence(oPresence);
+    }
+
+    static testToken(sToken) {
+        let testClient = new Client.Client();
+        testClient.on('ready', () => testClient.destroy());
+        return testClient.login(sToken);
+    }
 }
 
 function genericOnCallback(sGameName, sStatus) {

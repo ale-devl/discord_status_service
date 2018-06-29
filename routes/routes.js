@@ -10,8 +10,10 @@ module.exports = function (app) {
         .post([ApplicationKeyHandler.checkKey, Client.postClient]);
 
     app.route('/client/:token')
-        .get([ApplicationKeyHandler.checkKey, Client.getClient]);
+        .get([ApplicationKeyHandler.checkKey, Client.getClient])
+        .put([ApplicationKeyHandler.checkKey, Client.putClient])
+        .delete([ApplicationKeyHandler.checkKey, Client.deleteClient]);
 
-    app.route('/activeTokens')
-        .get([ApplicationKeyHandler.checkKey, Client.isClientActive]);
+    app.route('/tokenCheck/:token')
+        .get([ApplicationKeyHandler.checkKey, Client.getIsTokenValid]);
 }
